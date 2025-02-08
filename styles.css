@@ -1,35 +1,137 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
 body {
-    text-align: center;
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    color: #333;
-    transition: background-color 0.3s, color 0.3s;
+    margin: 0;
+    padding: 0;
+    background-color: #000000;
+    color: #bbbbbb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 60vh;
+    font-size: 16px;
 }
 
-button {
-    background: linear-gradient(135deg, #4CAF50, #388E3C);
-    color: white;
+body::-webkit-scrollbar {
+    display: none;
+}
+
+.container {
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
     padding: 10px;
-    border: none;
-    cursor: pointer;
-    margin: 5px;
-    border-radius: 5px;
-    transition: background 0.3s;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    /* background-color: #ffffff; */
 }
 
-button:hover {
-    background: linear-gradient(135deg, #45a049, #2e7d32);
+.title {
+    font-size: 30px;
+    margin-top: 15px;
+    color: #6200ea;
 }
 
-.dark-mode {
-    background-color: #121212;
-    color: white;
+.quote {
+    font-size: 20px;
+    margin-top: 15px;
+    font-style: italic;
+    color: #888;
 }
 
-.dark-mode button {
+.button {
     background: linear-gradient(135deg, #bb86fc, #6200ea);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 15px;
+    font-size: 15px;
+    cursor: pointer;
+    border-radius: 6px;
 }
 
-.dark-mode button:hover {
-    background: linear-gradient(135deg, #9e67ff, #4b00e0);
+.button:hover {
+    background-color: #623da5;
+}
+
+.timer-btn {
+    background-color: #ff9800;
+}
+
+.timer-btn:hover {
+    background-color: #e68900;
+}
+
+.timer {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 20px;
+    color: #ffffff;
+}
+
+.section-title {
+    font-size: 25px;
+    color: #888;
+    margin-top: 30px;
+}
+
+.rewards-text {
+    font-size: 20px;
+    color: #888;
+}
+
+.history-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.history-list li {
+    margin: 10px 0;
+}
+
+.timer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+/* Blocked Sites UI Styling */
+.blocked-sites-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    align-items: center;
+}
+
+.blocked-sites-container input {
+    padding: 5px;
+    margin-bottom: 10px;
+    outline: none;
+    border-radius: 10px;
+}
+
+.blocked-sites-container button {
+    background: linear-gradient(135deg, #bb86fc, #6200ea);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 15px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.blocked-sites-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.blocked-sites-container li {
+    margin: 10px 0;
 }
