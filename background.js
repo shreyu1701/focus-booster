@@ -38,3 +38,40 @@ function showNotification() {
     priority: 2,
   });
 }
+
+//blocking sites
+chrome.storage.local.get("blockedSites", (data) => {
+  let rules =
+    data.blockedSites?.map((site, index) => ({
+      id: index + 1,
+      priority: 1,
+      action: { type: "redirect", redirect: { extensionPath: "./focus.html" } },
+      condition: { urlFilter: site, resourceTypes: ["main_frame"] },
+    })) || [];
+
+  chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: rules.map((rule) => rule.id),
+    addRules: rules,
+  });
+});
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.action === "updateRules") {
+    chrome.storage.local.get("blockedSites", (data) => {
+      let rules = data.blockedSites.map((site, index) => ({
+        id: index + 1,
+        priority: 1,
+        action: {
+          type: "redirect",
+          redirect: { extensionPath: "/focus.html" },
+        },
+        condition: { urlFilter: site, resourceTypes: ["main_frame"] },
+      }));
+
+      chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: rules.map((rule) => rule.id),
+        addRules: rules,
+      });
+    });
+  }
+});

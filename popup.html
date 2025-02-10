@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Focus-Booster</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="./css/styles.css">
 </head>
 
 <body>
@@ -24,14 +24,19 @@
         </div>
         <div id="timer" class="timer">25:00</div>
 
+        <h2 class="section-title">Block Website</h2>
         <div class="blocked-sites-container">
-            <input type="text" id="site-input" placeholder="Enter website to block" required />
-            <button id="add-site-btn">Add Website</button>
+            <input type="text" id="site-input" placeholder="Enter website to block" aria-label="Website URL to block"
+                required />
+            <div class="button-group">
+                <button id="add-site-btn" aria-label="Add website to block">Add Website</button>
+                <button id="view-sites-btn">View all</button>
+            </div>
             <ul id="blocked-sites-list"></ul>
         </div>
 
         <h3 class="section-title">Rewards</h3>
-        <p id="rewards" class="rewards-text">0 Milestones Completed</p>
+        <p id="rewards-text" class="rewards-text">0 Milestones Completed</p>
 
         <h3 class="section-title">Session History</h3>
         <ul id="history" class="history-list"></ul>

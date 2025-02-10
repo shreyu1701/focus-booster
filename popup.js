@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const timerDisplay = document.getElementById("timer");
   let timerInterval;
 
-  // Function to update timer display
   const updateTimerDisplay = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -25,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .padStart(2, "0")}`;
   };
 
-  // Load and resume timer from storage
   chrome.storage.local.get(["timerEnd"], (data) => {
     if (data.timerEnd) {
       const remainingSeconds = Math.max(
@@ -37,9 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Start Timer
   startButton.addEventListener("click", () => {
-    const duration = 1500; // 25 minutes in seconds
+    const duration = 1500;
     const endTime = Date.now() + duration * 1000;
 
     chrome.storage.local.set({ timerEnd: endTime });
@@ -48,7 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
     startBackgroundTimer();
   });
 
-  // Function to run the background timer
   const startBackgroundTimer = () => {
     if (timerInterval) return;
     timerInterval = setInterval(() => {
@@ -63,7 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
   };
 
-  // Stop Timer
   const stopTimer = () => {
     clearInterval(timerInterval);
     timerInterval = null;
@@ -72,10 +67,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   stopButton.addEventListener("click", stopTimer);
 
-  // Reset Timer
   resetButton.addEventListener("click", () => {
     stopTimer();
-    updateTimerDisplay(1500); // Reset to 25:00
+    updateTimerDisplay(1500);
   });
 });
 
@@ -89,50 +83,61 @@ function showNotification() {
   });
 }
 
-// Storage for blocked sites
-let blockedSites = JSON.parse(localStorage.getItem("blockedSites")) || [];
-
-// Function to load and display blocked sites
 function loadBlockedSites() {
-  const siteList = document.getElementById("blocked-sites-list");
-  siteList.innerHTML = "";
-  blockedSites.forEach((site) => {
-    const listItem = document.createElement("li");
-    listItem.innerHTML = `${site} <button class="delete-btn" data-site="${site}">Delete</button>`;
-    siteList.appendChild(listItem);
+  chrome.storage.local.get("blockedSites", (data) => {
+    const blockedSitesList = document.getElementById("blocked-sites-list");
+    blockedSitesList.innerHTML = "";
+    (data.blockedSites || []).forEach((site) => {
+      const listItem = document.createElement("li");
+      listItem.innerHTML = `${site} <button class="delete-btn" data-site="${site}">Remove</button>`;
+      blockedSitesList.appendChild(listItem);
+    });
   });
 }
 
-// Add site to block list
 document.getElementById("add-site-btn").addEventListener("click", function () {
-  const siteInput = document.getElementById("site-input").value;
-  if (siteInput && !blockedSites.includes(siteInput)) {
-    blockedSites.push(siteInput);
-    localStorage.setItem("blockedSites", JSON.stringify(blockedSites));
-    loadBlockedSites();
-    document.getElementById("site-input").value = "";
+  const siteInput = document.getElementById("site-input").value.trim();
+  if (siteInput) {
+    chrome.storage.local.get("blockedSites", (data) => {
+      let blockedSites = data.blockedSites || [];
+      if (!blockedSites.includes(siteInput)) {
+        blockedSites.push(siteInput);
+        chrome.storage.local.set({ blockedSites }, () => {
+          chrome.runtime.sendMessage({ action: "updateRules" });
+          loadBlockedSites();
+          document.getElementById("site-input").value = ""; // Clear input field
+        });
+      }
+    });
   }
 });
 
-// Delete site from block list
 document
   .getElementById("blocked-sites-list")
   .addEventListener("click", function (event) {
     if (event.target.classList.contains("delete-btn")) {
       const site = event.target.getAttribute("data-site");
-      blockedSites = blockedSites.filter((blockedSite) => blockedSite !== site);
-      localStorage.setItem("blockedSites", JSON.stringify(blockedSites));
-      loadBlockedSites();
+
+      chrome.storage.local.get("blockedSites", (data) => {
+        let blockedSites = data.blockedSites || [];
+        blockedSites = blockedSites.filter(
+          (blockedSite) => blockedSite !== site
+        );
+
+        chrome.storage.local.set({ blockedSites }, () => {
+          chrome.runtime.sendMessage({ action: "updateRules" });
+          loadBlockedSites();
+        });
+      });
     }
   });
 
-// Redirect blocked websites during the session
-function checkBlockedSites() {
-  const currentUrl = window.location.hostname;
-  if (blockedSites.includes(currentUrl)) {
-    window.location.href = "./focus.html"; // Redirect to a focus-friendly page
-  }
-}
+document
+  .getElementById("view-sites-btn")
+  .addEventListener("click", function () {
+    const siteList = document.getElementById("blocked-sites-list");
+    siteList.style.display =
+      siteList.style.display === "none" ? "block" : "none";
+  });
 
-// Run check on page load
-checkBlockedSites();
+document.addEventListener("DOMContentLoaded", loadBlockedSites);
