@@ -16,5 +16,11 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": "./icons/icon16.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["focus.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
