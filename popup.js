@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   startButton.addEventListener("click", () => {
-    const duration = 10; // 25 minutes
+    const duration = 1500; // 25 minutes
     const endTime = Date.now() + duration * 1000;
 
     chrome.storage.local.set({ timerEnd: endTime });
@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   resetButton.addEventListener("click", () => {
     stopTimer();
-    updateTimerDisplay(10); // Default 25 min
+    updateTimerDisplay(1500); // Default 25 min
   });
 
   document.getElementById("new-quote").addEventListener("click", () => {
