@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   startButton.addEventListener("click", () => {
-    const duration = 1500; // 25 minutes
+    const duration = 10; // 25 minutes
     const endTime = Date.now() + duration * 1000;
 
     chrome.storage.local.set({ timerEnd: endTime });
@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   resetButton.addEventListener("click", () => {
     stopTimer();
-    updateTimerDisplay(1500); // Default 25 min
+    updateTimerDisplay(10); // Default 25 min
   });
 
   document.getElementById("new-quote").addEventListener("click", () => {
@@ -130,3 +130,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   loadBlockedSites();
 });
+
+document.getElementById("save-reward-btn").addEventListener("click", () => {
+  const customReward = document
+    .getElementById("custom-reward-input")
+    .value.trim();
+  if (customReward) {
+    chrome.storage.local.set({ customReward });
+    alert("Custom reward saved!");
+  }
+});
+
+function showReward() {
+  const rewardModal = document.getElementById("reward-modal");
+  const rewardMessage = document.getElementById("reward-message");
+
+  // Default messages
+  const messages = [
+    "Great job! You're unstoppable!",
+    "Another session down. Keep it up!",
+    "You're building an incredible focus habit!",
+    "Keep going—you’re crushing it!",
+  ];
+
+  chrome.storage.local.get(["customReward", "completedSessions"], (data) => {
+    const customReward = data.customReward;
+    rewardMessage.innerText =
+      customReward || messages[Math.floor(Math.random() * messages.length)];
+
+    let sessions = data.completedSessions || 0;
+    sessions++;
+    chrome.storage.local.set({ completedSessions: sessions });
+
+    document.getElementById(
+      "badge"
+    ).innerText = `Sessions Completed: ${sessions}`;
+    rewardModal.style.display = "block";
+  });
+}

@@ -105,7 +105,6 @@ body {
 .blocked-sites-container {
     display: flex;
     flex-direction: column;
-    margin-top: 20px;
     align-items: center;
     padding-top: 20px;
 }
@@ -135,4 +134,21 @@ body {
 
 .blocked-sites-container li {
     margin: 10px 0;
+}
+
+
+/* Customizable Rewards */
+.custom-rewards-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+}
+
+.custom-rewards-container input {
+    padding: 5px;
+    margin-bottom: 5px;
+    outline: none;
+    border-radius: 10px;
+    font-size: 18px;
 }
