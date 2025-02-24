@@ -26,16 +26,16 @@
 
         <h2 class="section-title">Block Website</h2>
         <div class="blocked-sites-container">
-            <input type="text" id="site-input" placeholder="Enter website to block" aria-label="Website URL to block"
-                required />
+            <input type="text" id="site-input" placeholder="Enter website(e.g youtube.com)"
+                aria-label="Website URL to block" required />
             <div class="button-group">
-                <button id="add-site-btn" aria-label="Add website to block">Add Website</button>
-                <button id="view-sites-btn">View all</button>
+                <button id="add-site-btn" class="button-block" aria-label="Add website to block">Add Website</button>
+                <button id="view-sites-btn" class="button">View all</button>
             </div>
             <ul id="blocked-sites-list"></ul>
         </div>
 
-        <h3 class="section-title">Customize Your Reward</h3>
+        <!-- <h3 class="section-title">Customize Your Reward</h3>
         <div class="custom-rewards-container">
             <input type="text" id="custom-reward-input" placeholder="Enter your custom reward"
                 aria-label="Customize your Reward" required />
@@ -50,10 +50,10 @@
                     <p id="badge"></p>
                 </div>
             </div>
-        </div>
+        </div> -->
 
-        <h3 class="section-title">Session History</h3>
-        <ul id="history" class="history-list"></ul>
+        <!-- <h3 class="section-title">Session History</h3>
+        <ul id="history" class="history-list"></ul> -->
 
     </div>
     <script src="popup.js" defer></script>

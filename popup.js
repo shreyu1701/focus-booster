@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   startButton.addEventListener("click", () => {
-    const duration = 10; // 25 minutes
+    const duration = 1500; // 25 minutes
     const endTime = Date.now() + duration * 1000;
 
     chrome.storage.local.set({ timerEnd: endTime });
@@ -60,15 +60,37 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   resetButton.addEventListener("click", () => {
     stopTimer();
-    updateTimerDisplay(10); // Default 25 min
+    updateTimerDisplay(1500); // Default 25 min
   });
 
   document.getElementById("new-quote").addEventListener("click", () => {
     const quotes = [
       "Focus on the goal, not the obstacle.",
-      "Small steps lead to big achievements.",
+      "Small focus, big results.",
       "Your focus determines your reality.",
-      "Stay disciplined, stay ahead.",
+      "Discipline fuels sharp focus.",
+      "Stay focused, stay unstoppable.",
+      "Focus fuels your success.",
+      "Distraction kills your dreams.",
+      "Eyes forward, mind sharp.",
+      "Laser focus wins battles.",
+      "Eliminate distractions, maximize productivity.",
+      "Focus on the positive, success follows.",
+      "Your focus is your superpower.",
+      "Focus on your goals, conquer your fears.",
+      "Stay focused, stay determined.",
+      "Focus now, future follows.",
+      "One goal, one mission.",
+      "Deep focus, great results.",
+      "Small distractions, big losses.",
+      "Consistency builds sharp focus.",
+      "Focus, execute, achieve greatness.",
+      "Distraction delays your success.",
+      "Prioritize focus over everything.",
+      "Zero excuses, total focus.",
+      "Focus sharpens your vision.",
+      "Success follows extreme focus.",
+      "Cut noise, amplify results.",
     ];
     document.getElementById("quote").innerText =
       quotes[Math.floor(Math.random() * quotes.length)];
