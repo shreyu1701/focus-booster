@@ -1,21 +1,16 @@
 {
   "manifest_version": 3,
   "name": "Focus-Booster",
-  "version": "1.2",
+  "version": "1.0",
   "description": "Block distracting websites during focus sessions.",
-  "permissions": [
-    "storage",
-    "alarms",
-    "notifications",
-    "declarativeNetRequest"
-  ],
+  "permissions": ["storage", "notifications", "declarativeNetRequest"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "./icons/Focus(20x20px).png"
+    "default_icon": "./icons/Brain_icon16.png"
   },
   "web_accessible_resources": [
     {

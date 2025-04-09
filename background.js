@@ -50,7 +50,7 @@ async function stopTimer() {
 function showNotification() {
   chrome.notifications.create({
     type: "basic",
-    iconUrl: "/icons/icon128.png",
+    iconUrl: "/icons/Focus-Booster.png",
     title: "Focus Session Completed!",
     message: "Great job! Time for a break!",
     priority: 2,

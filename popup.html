@@ -1,41 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Focus-Booster</title>
-    <link rel="stylesheet" type="text/css" href="./css/styles.css">
-</head>
+    <link rel="stylesheet" type="text/css" href="./css/styles.css" />
+  </head>
 
-<body>
+  <body>
     <div class="container">
-        <h1 class="title">Focus Booster!</h1>
-        <p id="quote" class="quote">Your focus determines your reality.</p>
-        <button id="new-quote" class="button">New Quote</button>
+      <h1 class="title">Focus Booster!</h1>
+      <p id="quote" class="quote">Your focus determines your reality.</p>
+      <button id="new-quote" class="button">New Quote</button>
 
-        <h2 class="section-title">Pomodoro Timer</h2>
-        <div class="timer-container">
-            <button id="start-timer" class="button timer-btn">Start 25 min Focus</button>
-            <div class="button-group">
-                <button id="reset-timer" class="button reset-btn">Reset</button>
-                <button id="stop-timer" class="button stop-btn">Stop</button>
-            </div>
+      <h2 class="section-title">Pomodoro Timer</h2>
+      <div class="timer-container">
+        <button id="start-timer" class="button timer-btn">
+          Start 25 min Focus
+        </button>
+        <div class="button-group">
+          <button id="reset-timer" class="button reset-btn">Reset</button>
+          <button id="stop-timer" class="button stop-btn">Stop</button>
         </div>
-        <div id="timer" class="timer">25:00</div>
+      </div>
+      <div id="timer" class="timer">25:00</div>
 
-        <h2 class="section-title">Block Website</h2>
-        <div class="blocked-sites-container">
-            <input type="text" id="site-input" placeholder="Enter website(e.g youtube.com)"
-                aria-label="Website URL to block" required />
-            <div class="button-group">
-                <button id="add-site-btn" class="button-block" aria-label="Add website to block">Add Website</button>
-                <button id="view-sites-btn" class="button">View all</button>
-            </div>
-            <ul id="blocked-sites-list"></ul>
+      <h2 class="section-title">Block Website</h2>
+      <div class="blocked-sites-container">
+        <input
+          type="text"
+          id="site-input"
+          placeholder="Enter website(e.g youtube.com)"
+          aria-label="Website URL to block"
+          required
+        />
+        <div class="button-group">
+          <button
+            id="add-site-btn"
+            class="button-block"
+            aria-label="Add website to block"
+          >
+            Add Website
+          </button>
+          <button id="view-sites-btn" class="button">View all</button>
         </div>
+        <ul id="blocked-sites-list"></ul>
+      </div>
 
-        <!-- <h3 class="section-title">Customize Your Reward</h3>
+      <!-- <h3 class="section-title">Customize Your Reward</h3>
         <div class="custom-rewards-container">
             <input type="text" id="custom-reward-input" placeholder="Enter your custom reward"
                 aria-label="Customize your Reward" required />
@@ -52,11 +64,9 @@
             </div>
         </div> -->
 
-        <!-- <h3 class="section-title">Session History</h3>
-        <ul id="history" class="history-list"></ul> -->
-
+      <!-- <h3 class="section-title">Session History</h3>
+      <ul id="history" class="history-list"></ul> -->
     </div>
     <script src="popup.js" defer></script>
-</body>
-
+  </body>
 </html>
