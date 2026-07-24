@@ -238,6 +238,23 @@ body {
   margin-bottom: 10px;
 }
 
+.review-prompt .panel-head h2 {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+  color: var(--accent-bright);
+}
+
+.review-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.review-actions .btn.danger {
+  grid-column: auto;
+}
+
 .toggle {
   display: inline-flex;
   align-items: center;

@@ -1,4 +1,10 @@
-import { PRESETS, SHORT_BREAK_SECONDS } from "./lib/constants.js";
+import {
+  PRESETS,
+  REVIEW_PROMPT_MIN_SESSIONS,
+  REVIEW_PROMPT_SNOOZE_SESSIONS,
+  SHORT_BREAK_SECONDS,
+  STORE_REVIEWS_URL,
+} from "./lib/constants.js";
 import { normalizeHostname } from "./lib/hostname.js";
 import { randomQuote } from "./lib/quotes.js";
 import { formatTime } from "./lib/storage.js";
@@ -20,6 +26,9 @@ const els = {
   siteError: document.getElementById("site-error"),
   siteList: document.getElementById("blocked-sites-list"),
   status: document.getElementById("status"),
+  reviewPrompt: document.getElementById("review-prompt"),
+  reviewRate: document.getElementById("review-rate"),
+  reviewDismiss: document.getElementById("review-dismiss"),
 };
 
 let tickId = null;
@@ -77,6 +86,8 @@ async function init() {
     await send("syncRules");
   });
   els.siteList.addEventListener("click", onSiteListClick);
+  els.reviewRate.addEventListener("click", onReviewRate);
+  els.reviewDismiss.addEventListener("click", onReviewDismiss);
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local") refresh();
@@ -106,6 +117,36 @@ async function refresh() {
 
   renderSites(state.blockedSites || []);
   updateSessionUi(state);
+  updateReviewPrompt(state);
+}
+
+function updateReviewPrompt(state) {
+  const sessions = state.completedSessions || 0;
+  const snoozeUntil = state.reviewPromptSnoozeUntil || 0;
+  const shouldShow =
+    Boolean(state.pendingBreak) &&
+    !state.sessionActive &&
+    !state.reviewPromptDismissed &&
+    sessions >= REVIEW_PROMPT_MIN_SESSIONS &&
+    sessions >= snoozeUntil;
+
+  els.reviewPrompt.hidden = !shouldShow;
+}
+
+async function onReviewRate() {
+  await chrome.storage.local.set({ reviewPromptDismissed: true });
+  els.reviewPrompt.hidden = true;
+  await chrome.tabs.create({ url: STORE_REVIEWS_URL });
+}
+
+async function onReviewDismiss() {
+  const { completedSessions = 0 } = await chrome.storage.local.get({
+    completedSessions: 0,
+  });
+  await chrome.storage.local.set({
+    reviewPromptSnoozeUntil: completedSessions + REVIEW_PROMPT_SNOOZE_SESSIONS,
+  });
+  els.reviewPrompt.hidden = true;
 }
 
 function updateSessionUi(state) {
