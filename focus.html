@@ -3,21 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stay Focused</title>
-    <link rel="stylesheet" href="./css/focusstyles.css" />
+    <title>Stay focused — Focus Booster</title>
+    <link rel="stylesheet" href="css/focusstyles.css" />
   </head>
-
   <body>
-    <div class="focus-container">
-      <h1>Stay Focused! 🚀</h1>
-      <p>
-        You're here because you blocked this site. Keep working on your goals!
+    <main class="focus-shell">
+      <p class="brand">Focus-Booster</p>
+      <h1>Stay Focused!</h1>
+      <p class="lead">
+        You blocked this domain during focus time. Head back to the work that
+        matters.
       </p>
-      <button id="back-to-work">Back to Work</button>
-      <div class="quote-container">
-        <p id="focus-quote">"Your focus determines your reality."</p>
+      <p id="focus-quote" class="quote"></p>
+      <div class="actions">
+        <button id="back-to-work" type="button">Back to work</button>
+        <button id="open-popup-hint" class="secondary" type="button">
+          Open Focus Booster
+        </button>
       </div>
-    </div>
-    <script src="focus.js"></script>
+      <p id="session-note" class="note"></p>
+    </main>
+    <script type="module" src="focus.js"></script>
   </body>
 </html>

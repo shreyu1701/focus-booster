@@ -1,37 +1,104 @@
+:root {
+  --bg: #1e1e2e;
+  --panel: #282a36;
+  --text: #ffffff;
+  --muted: #bbbbbb;
+  --accent: #6200ea;
+  --accent-bright: #bb86fc;
+  --danger: #ff5555;
+  --stroke: #3a3c4e;
+  --font: Arial, "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #1e1e2e;
-    color: white;
-    text-align: center;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  font-family: var(--font);
+  color: var(--text);
+  background:
+    radial-gradient(80% 60% at 50% -10%, rgba(98, 0, 234, 0.45) 0%, transparent 60%),
+    var(--bg);
 }
 
-.focus-container {
-    max-width: 800px;
-    padding: 20px;
-    background: #282a36;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+.focus-shell {
+  width: min(560px, 100%);
+  padding: 40px 36px;
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
-p {
-    font-size: 18px;
+.brand {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-bright);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: clamp(28px, 5vw, 40px);
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+  color: var(--accent-bright);
+}
+
+.lead {
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.quote {
+  font-size: 16px;
+  font-style: italic;
+  color: #dddddd;
+  line-height: 1.45;
+  margin-bottom: 28px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
 }
 
 button {
-    background-color: #ff5555;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    margin-top: 15px;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 5px;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--danger);
+  color: #ffffff;
+}
+
+button.secondary {
+  background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+  color: #ffffff;
 }
 
 button:hover {
-    background-color: #ff4444;
+  filter: brightness(1.08);
+}
+
+.note {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--muted);
+  min-height: 1.2em;
 }

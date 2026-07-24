@@ -1,192 +1,261 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  const startButton = document.getElementById("start-timer");
-  const stopButton = document.getElementById("stop-timer");
-  const resetButton = document.getElementById("reset-timer");
-  const timerDisplay = document.getElementById("timer");
+import { PRESETS, SHORT_BREAK_SECONDS } from "./lib/constants.js";
+import { normalizeHostname } from "./lib/hostname.js";
+import { randomQuote } from "./lib/quotes.js";
+import { formatTime } from "./lib/storage.js";
 
-  let timerInterval;
+const els = {
+  quote: document.getElementById("quote"),
+  newQuote: document.getElementById("new-quote"),
+  timer: document.getElementById("timer"),
+  sessionLabel: document.getElementById("session-label"),
+  customMinutes: document.getElementById("custom-minutes"),
+  startFocus: document.getElementById("start-focus"),
+  startBreak: document.getElementById("start-break"),
+  stopSession: document.getElementById("stop-session"),
+  statSessions: document.getElementById("stat-sessions"),
+  statStreak: document.getElementById("stat-streak"),
+  alwaysBlock: document.getElementById("always-block"),
+  siteInput: document.getElementById("site-input"),
+  addSite: document.getElementById("add-site"),
+  siteError: document.getElementById("site-error"),
+  siteList: document.getElementById("blocked-sites-list"),
+  status: document.getElementById("status"),
+};
 
-  const updateTimerDisplay = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    timerDisplay.innerText = `${minutes}:${remainingSeconds
-      .toString()
-      .padStart(2, "0")}`;
-  };
+let tickId = null;
+let selectedPreset = "25";
 
-  let { timerEnd } = await chrome.storage.local.get("timerEnd");
-  if (timerEnd) {
-    const remainingSeconds = Math.max(
-      0,
-      Math.floor((timerEnd - Date.now()) / 1000)
+init();
+
+async function init() {
+  els.quote.textContent = randomQuote();
+  els.newQuote.addEventListener("click", () => {
+    els.quote.textContent = randomQuote();
+  });
+
+  document.querySelectorAll(".chip[data-preset]").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      selectedPreset = chip.dataset.preset;
+      document
+        .querySelectorAll(".chip[data-preset]")
+        .forEach((c) => c.classList.toggle("is-active", c === chip));
+      const preset = PRESETS.find((p) => p.id === selectedPreset);
+      if (preset) {
+        els.customMinutes.value = String(preset.seconds / 60);
+        els.timer.textContent = formatTime(preset.seconds);
+      }
+      chrome.storage.local.set({
+        selectedPreset,
+        customMinutes: Number(els.customMinutes.value),
+      });
+    });
+  });
+
+  els.customMinutes.addEventListener("change", () => {
+    selectedPreset = "custom";
+    document
+      .querySelectorAll(".chip[data-preset]")
+      .forEach((c) => c.classList.remove("is-active"));
+    const minutes = clampMinutes(els.customMinutes.value);
+    els.customMinutes.value = String(minutes);
+    els.timer.textContent = formatTime(minutes * 60);
+    chrome.storage.local.set({
+      selectedPreset: "custom",
+      customMinutes: minutes,
+    });
+  });
+
+  els.startFocus.addEventListener("click", onStartFocus);
+  els.startBreak.addEventListener("click", onStartBreak);
+  els.stopSession.addEventListener("click", onStop);
+  els.addSite.addEventListener("click", onAddSite);
+  els.siteInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") onAddSite();
+  });
+  els.alwaysBlock.addEventListener("change", async () => {
+    await chrome.storage.local.set({ alwaysBlock: els.alwaysBlock.checked });
+    await send("syncRules");
+  });
+  els.siteList.addEventListener("click", onSiteListClick);
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local") refresh();
+  });
+
+  await refresh();
+}
+
+async function refresh() {
+  const state = await send("getState");
+  if (!state?.ok) return;
+
+  selectedPreset = state.selectedPreset || "25";
+  els.alwaysBlock.checked = Boolean(state.alwaysBlock);
+  els.statSessions.textContent = String(state.completedSessions || 0);
+  els.statStreak.textContent = String(state.streak || 0);
+  els.customMinutes.value = String(
+    state.customMinutes || PRESETS.find((p) => p.id === "25").seconds / 60,
+  );
+
+  document.querySelectorAll(".chip[data-preset]").forEach((chip) => {
+    chip.classList.toggle(
+      "is-active",
+      selectedPreset !== "custom" && chip.dataset.preset === selectedPreset,
     );
-    updateTimerDisplay(remainingSeconds);
-    if (remainingSeconds > 0) startBackgroundTimer();
-  }
-
-  startButton.addEventListener("click", () => {
-    const duration = 1501; // 25 minutes
-    const endTime = Date.now() + duration * 1000;
-
-    chrome.storage.local.set({ timerEnd: endTime });
-    chrome.runtime.sendMessage({ action: "startTimer", endTime });
-
-    startBackgroundTimer();
   });
 
-  function startBackgroundTimer() {
-    if (timerInterval) return;
+  renderSites(state.blockedSites || []);
+  updateSessionUi(state);
+}
 
-    timerInterval = setInterval(async () => {
-      let { timerEnd } = await chrome.storage.local.get("timerEnd");
-      const remainingSeconds = Math.max(
+function updateSessionUi(state) {
+  clearInterval(tickId);
+  tickId = null;
+
+  if (state.sessionActive && state.timerEnd) {
+    const label =
+      state.sessionType === "break" ? "Break in progress" : "Focus in progress";
+    els.sessionLabel.textContent = label;
+    els.startFocus.disabled = true;
+    els.startBreak.disabled = true;
+
+    const paint = () => {
+      const remaining = Math.max(
         0,
-        Math.floor((timerEnd - Date.now()) / 1000)
+        Math.floor((state.timerEnd - Date.now()) / 1000),
       );
-
-      updateTimerDisplay(remainingSeconds);
-      if (remainingSeconds <= 0) stopTimer();
-    }, 1000);
-  }
-
-  function stopTimer() {
-    clearInterval(timerInterval);
-    timerInterval = null;
-    chrome.storage.local.remove("timerEnd");
-    chrome.runtime.sendMessage({ action: "stopTimer" });
-  }
-
-  stopButton.addEventListener("click", stopTimer);
-
-  resetButton.addEventListener("click", () => {
-    stopTimer();
-    updateTimerDisplay(1501); // Default 25 min
-  });
-
-  document.getElementById("new-quote").addEventListener("click", () => {
-    const quotes = [
-      "Focus on the goal, not the obstacle.",
-      "Small focus, big results.",
-      "Your focus determines your reality.",
-      "Discipline fuels sharp focus.",
-      "Stay focused, stay unstoppable.",
-      "Focus fuels your success.",
-      "Distraction kills your dreams.",
-      "Eyes forward, mind sharp.",
-      "Laser focus wins battles.",
-      "Eliminate distractions, maximize productivity.",
-      "Focus on the positive, success follows.",
-      "Your focus is your superpower.",
-      "Focus on your goals, conquer your fears.",
-      "Stay focused, stay determined.",
-      "Focus now, future follows.",
-      "One goal, one mission.",
-      "Deep focus, great results.",
-      "Small distractions, big losses.",
-      "Consistency builds sharp focus.",
-      "Focus, execute, achieve greatness.",
-      "Distraction delays your success.",
-      "Prioritize focus over everything.",
-      "Zero excuses, total focus.",
-      "Focus sharpens your vision.",
-      "Success follows extreme focus.",
-      "Cut noise, amplify results.",
-    ];
-    document.getElementById("quote").innerText =
-      quotes[Math.floor(Math.random() * quotes.length)];
-  });
-
-  async function loadBlockedSites() {
-    let { blockedSites = [] } = await chrome.storage.local.get("blockedSites");
-    const blockedSitesList = document.getElementById("blocked-sites-list");
-    blockedSitesList.innerHTML = "";
-
-    blockedSites.forEach((site) => {
-      const listItem = document.createElement("li");
-      listItem.innerHTML = `${site} <button class="delete-btn" data-site="${site}">Remove</button>`;
-      blockedSitesList.appendChild(listItem);
-    });
-  }
-
-  document
-    .getElementById("add-site-btn")
-    .addEventListener("click", async () => {
-      const siteInput = document.getElementById("site-input").value.trim();
-      if (!siteInput) return;
-
-      let { blockedSites = [] } = await chrome.storage.local.get(
-        "blockedSites"
-      );
-      if (!blockedSites.includes(siteInput)) {
-        blockedSites.push(siteInput);
-        await chrome.storage.local.set({ blockedSites });
-        chrome.runtime.sendMessage({ action: "updateRules" });
-        loadBlockedSites();
-        document.getElementById("site-input").value = "";
+      els.timer.textContent = formatTime(remaining);
+      if (remaining <= 0) {
+        clearInterval(tickId);
+        refresh();
       }
-    });
+    };
+    paint();
+    tickId = setInterval(paint, 250);
+    return;
+  }
 
-  document
-    .getElementById("blocked-sites-list")
-    .addEventListener("click", async (event) => {
-      if (event.target.classList.contains("delete-btn")) {
-        const site = event.target.getAttribute("data-site");
-        let { blockedSites = [] } = await chrome.storage.local.get(
-          "blockedSites"
-        );
+  els.startFocus.disabled = false;
+  els.startBreak.disabled = false;
 
-        blockedSites = blockedSites.filter(
-          (blockedSite) => blockedSite !== site
-        );
-        await chrome.storage.local.set({ blockedSites });
-        chrome.runtime.sendMessage({ action: "updateRules" });
-        loadBlockedSites();
-      }
-    });
+  if (state.pendingBreak) {
+    els.sessionLabel.textContent = "Focus done — take a break?";
+  } else {
+    els.sessionLabel.textContent = "Idle";
+  }
 
-  document.getElementById("view-sites-btn").addEventListener("click", () => {
-    const siteList = document.getElementById("blocked-sites-list");
-    siteList.style.display =
-      siteList.style.display === "none" ? "block" : "none";
+  const minutes = clampMinutes(els.customMinutes.value);
+  els.timer.textContent = formatTime(minutes * 60);
+}
+
+function renderSites(sites) {
+  els.siteList.innerHTML = "";
+  if (!sites.length) {
+    const empty = document.createElement("li");
+    empty.className = "empty";
+    empty.textContent = "No blocked sites yet.";
+    els.siteList.appendChild(empty);
+    return;
+  }
+
+  for (const site of sites) {
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${site}</span><button type="button" class="link-btn" data-remove="${site}">Remove</button>`;
+    els.siteList.appendChild(li);
+  }
+}
+
+async function onStartFocus() {
+  setStatus("");
+  const minutes = clampMinutes(els.customMinutes.value);
+  const result = await send("startFocus", { seconds: minutes * 60 });
+  if (!result.ok) {
+    setStatus(result.error || "Could not start focus session.", true);
+    return;
+  }
+  setStatus("Focus session started. Distractions sites are blocked.");
+  await refresh();
+}
+
+async function onStartBreak() {
+  setStatus("");
+  const result = await send("startBreak", { seconds: SHORT_BREAK_SECONDS });
+  if (!result.ok) {
+    setStatus(result.error || "Could not start break.", true);
+    return;
+  }
+  await chrome.storage.local.set({ pendingBreak: false });
+  setStatus("Break started. Sites are unblocked.");
+  await refresh();
+}
+
+async function onStop() {
+  await send("stopSession");
+  await chrome.storage.local.set({ pendingBreak: false });
+  setStatus("Session stopped.");
+  await refresh();
+}
+
+async function onAddSite() {
+  setSiteError("");
+  const parsed = normalizeHostname(els.siteInput.value);
+  if (parsed.error) {
+    setSiteError(parsed.error);
+    return;
+  }
+
+  const { host } = parsed;
+  const access = await send("requestHostAccess", { host });
+  if (!access.ok || !access.granted) {
+    setSiteError("Permission needed to block this site.");
+    return;
+  }
+
+  const { blockedSites = [] } = await chrome.storage.local.get({
+    blockedSites: [],
   });
+  if (blockedSites.includes(host)) {
+    setSiteError("That site is already on your list.");
+    return;
+  }
 
-  loadBlockedSites();
-});
+  blockedSites.push(host);
+  await chrome.storage.local.set({ blockedSites });
+  els.siteInput.value = "";
+  setStatus(`Added ${host}.`);
+  await refresh();
+}
 
-// document.getElementById("save-reward-btn").addEventListener("click", () => {
-//   const customReward = document
-//     .getElementById("custom-reward-input")
-//     .value.trim();
-//   if (customReward) {
-//     chrome.storage.local.set({ customReward });
-//     alert("Custom reward saved!");
-//   }
-// });
+async function onSiteListClick(event) {
+  const button = event.target.closest("[data-remove]");
+  if (!button) return;
+  const host = button.getAttribute("data-remove");
+  const { blockedSites = [] } = await chrome.storage.local.get({
+    blockedSites: [],
+  });
+  await chrome.storage.local.set({
+    blockedSites: blockedSites.filter((site) => site !== host),
+  });
+  setStatus(`Removed ${host}.`);
+  await refresh();
+}
 
-// function showReward() {
-//   const rewardModal = document.getElementById("reward-modal");
-//   const rewardMessage = document.getElementById("reward-message");
+function clampMinutes(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 25;
+  return Math.min(180, Math.max(1, Math.round(n)));
+}
 
-//   // Default messages
-//   const messages = [
-//     "Great job! You're unstoppable!",
-//     "Another session down. Keep it up!",
-//     "You're building an incredible focus habit!",
-//     "Keep going—you’re crushing it!",
-//   ];
+function setStatus(message, isError = false) {
+  els.status.textContent = message;
+  els.status.classList.toggle("is-error", isError);
+}
 
-//   chrome.storage.local.get(["customReward", "completedSessions"], (data) => {
-//     const customReward = data.customReward;
-//     rewardMessage.innerText =
-//       customReward || messages[Math.floor(Math.random() * messages.length)];
+function setSiteError(message) {
+  els.siteError.hidden = !message;
+  els.siteError.textContent = message;
+}
 
-//     let sessions = data.completedSessions || 0;
-//     sessions++;
-//     chrome.storage.local.set({ completedSessions: sessions });
-
-//     document.getElementById(
-//       "badge"
-//     ).innerText = `Sessions Completed: ${sessions}`;
-//     rewardModal.style.display = "block";
-//   });
-// }
+function send(action, payload = {}) {
+  return chrome.runtime.sendMessage({ action, ...payload });
+}

@@ -1,36 +1,40 @@
-document.getElementById("back-to-work").addEventListener("click", () => {
-  window.close(); // Closes the tab
+import { randomQuote } from "./lib/quotes.js";
+import { formatTime } from "./lib/storage.js";
+
+document.getElementById("focus-quote").textContent = randomQuote();
+
+const note = document.getElementById("session-note");
+
+async function paintSessionNote() {
+  const { sessionActive, sessionType, timerEnd } =
+    await chrome.storage.local.get({
+      sessionActive: false,
+      sessionType: null,
+      timerEnd: null,
+    });
+
+  if (sessionActive && sessionType === "focus" && timerEnd) {
+    const remaining = Math.max(0, Math.floor((timerEnd - Date.now()) / 1000));
+    note.textContent = `Focus time left: ${formatTime(remaining)}`;
+  } else {
+    note.textContent =
+      "Blocking is active (Always block is on, or a focus session just ended).";
+  }
+}
+
+paintSessionNote();
+setInterval(paintSessionNote, 1000);
+
+document.getElementById("back-to-work").addEventListener("click", async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab?.id) {
+    await chrome.tabs.update(tab.id, { url: "chrome://newtab/" });
+    return;
+  }
+  window.location.href = "chrome://newtab/";
 });
 
-// Random motivational quotes
-const quotes = [
-  "Focus on the goal, not the obstacle.",
-  "Small focus, big results.",
-  "Your focus determines your reality.",
-  "Discipline fuels sharp focus.",
-  "Stay focused, stay unstoppable.",
-  "Focus fuels your success.",
-  "Distraction kills your dreams.",
-  "Eyes forward, mind sharp.",
-  "Laser focus wins battles.",
-  "Eliminate distractions, maximize productivity.",
-  "Focus on the positive, success follows.",
-  "Your focus is your superpower.",
-  "Focus on your goals, conquer your fears.",
-  "Stay focused, stay determined.",
-  "Focus now, future follows.",
-  "One goal, one mission.",
-  "Deep focus, great results.",
-  "Small distractions, big losses.",
-  "Consistency builds sharp focus.",
-  "Focus, execute, achieve greatness.",
-  "Distraction delays your success.",
-  "Prioritize focus over everything.",
-  "Zero excuses, total focus.",
-  "Focus sharpens your vision.",
-  "Success follows extreme focus.",
-  "Cut noise, amplify results.",
-];
-
-document.getElementById("focus-quote").innerText =
-  quotes[Math.floor(Math.random() * quotes.length)];
+document.getElementById("open-popup-hint").addEventListener("click", () => {
+  note.textContent =
+    "Click the Focus Booster icon in the toolbar to manage your session.";
+});

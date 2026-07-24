@@ -3,70 +3,100 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Focus-Booster</title>
-    <link rel="stylesheet" type="text/css" href="./css/styles.css" />
+    <title>Focus Booster</title>
+    <link rel="stylesheet" href="css/styles.css" />
   </head>
-
   <body>
-    <div class="container">
-      <h1 class="title">Focus Booster!</h1>
-      <p id="quote" class="quote">Your focus determines your reality.</p>
-      <button id="new-quote" class="button">New Quote</button>
-
-      <h2 class="section-title">Pomodoro Timer</h2>
-      <div class="timer-container">
-        <button id="start-timer" class="button timer-btn">
-          Start 25 min Focus
+    <main class="app">
+      <header class="header">
+        <div>
+          <p class="brand">Focus Booster!</p>
+          <p id="quote" class="quote">Your focus determines your reality.</p>
+        </div>
+        <button id="new-quote" class="ghost-btn" type="button" aria-label="New quote">
+          Shuffle
         </button>
-        <div class="button-group">
-          <button id="reset-timer" class="button reset-btn">Reset</button>
-          <button id="stop-timer" class="button stop-btn">Stop</button>
-        </div>
-      </div>
-      <div id="timer" class="timer">25:00</div>
+      </header>
 
-      <h2 class="section-title">Block Website</h2>
-      <div class="blocked-sites-container">
-        <input
-          type="text"
-          id="site-input"
-          placeholder="Enter website(e.g youtube.com)"
-          aria-label="Website URL to block"
-          required
-        />
-        <div class="button-group">
-          <button
-            id="add-site-btn"
-            class="button-block"
-            aria-label="Add website to block"
-          >
-            Add Website
+      <section class="panel" aria-labelledby="timer-heading">
+        <div class="panel-head">
+          <h2 id="timer-heading">Session</h2>
+          <p id="session-label" class="meta">Idle</p>
+        </div>
+
+        <div id="timer" class="timer" aria-live="polite">25:00</div>
+
+        <div class="presets" role="group" aria-label="Focus duration">
+          <button type="button" class="chip" data-preset="15">15m</button>
+          <button type="button" class="chip is-active" data-preset="25">25m</button>
+          <button type="button" class="chip" data-preset="50">50m</button>
+          <label class="custom-wrap">
+            <span class="sr-only">Custom minutes</span>
+            <input
+              id="custom-minutes"
+              type="number"
+              min="1"
+              max="180"
+              value="25"
+              aria-label="Custom minutes"
+            />
+            <span>min</span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="start-focus" class="btn primary" type="button">
+            Start focus
           </button>
-          <button id="view-sites-btn" class="button">View all</button>
+          <button id="start-break" class="btn secondary" type="button">
+            Start break
+          </button>
+          <button id="stop-session" class="btn danger" type="button">
+            Stop
+          </button>
         </div>
-        <ul id="blocked-sites-list"></ul>
-      </div>
 
-      <!-- <h3 class="section-title">Customize Your Reward</h3>
-        <div class="custom-rewards-container">
-            <input type="text" id="custom-reward-input" placeholder="Enter your custom reward"
-                aria-label="Customize your Reward" required />
-            <button id="save-reward-btn" class="button">Save Reward</button>
+        <div class="stats">
+          <div>
+            <span id="stat-sessions" class="stat-value">0</span>
+            <span class="stat-label">Sessions</span>
+          </div>
+          <div>
+            <span id="stat-streak" class="stat-value">0</span>
+            <span class="stat-label">Day streak</span>
+          </div>
+        </div>
+      </section>
 
-            <h3 class="section-title">Rewards</h3>
-            <div id="reward-modal" class="modal">
-                <div class="modal-content">
-                    <span class="close-btn">&times;</span>
-                    <h2>Congratulations!</h2>
-                    <p id="reward-message"></p>
-                    <p id="badge"></p>
-                </div>
-            </div>
-        </div> -->
+      <section class="panel" aria-labelledby="block-heading">
+        <div class="panel-head">
+          <h2 id="block-heading">Blocklist</h2>
+          <label class="toggle">
+            <input id="always-block" type="checkbox" />
+            <span>Always block</span>
+          </label>
+        </div>
+        <p class="hint">
+          Sites redirect to a focus page during focus sessions. Optional “Always
+          block” keeps them blocked when idle.
+        </p>
 
-      <!-- <h3 class="section-title">Session History</h3>
-      <ul id="history" class="history-list"></ul> -->
-    </div>
-    <script src="popup.js" defer></script>
+        <div class="add-row">
+          <input
+            id="site-input"
+            type="text"
+            placeholder="youtube.com"
+            aria-label="Website to block"
+            autocomplete="off"
+          />
+          <button id="add-site" class="btn secondary" type="button">Add</button>
+        </div>
+        <p id="site-error" class="error" hidden></p>
+        <ul id="blocked-sites-list" class="site-list"></ul>
+      </section>
+
+      <p id="status" class="status" role="status"></p>
+    </main>
+    <script type="module" src="popup.js"></script>
   </body>
 </html>
