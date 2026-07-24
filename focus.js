@@ -27,11 +27,26 @@ setInterval(paintSessionNote, 1000);
 
 document.getElementById("back-to-work").addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tab?.id) {
-    await chrome.tabs.update(tab.id, { url: "chrome://newtab/" });
-    return;
+
+  // Prefer closing the blocked tab. chrome:// URLs cannot be used with tabs.update.
+  if (tab?.id != null) {
+    try {
+      await chrome.tabs.remove(tab.id);
+      return;
+    } catch (error) {
+      console.warn("Could not close tab", error);
+    }
+
+    try {
+      // Last-tab / policy fallback: leave the interstitial without chrome:// URLs.
+      await chrome.tabs.update(tab.id, { url: "about:blank" });
+      return;
+    } catch (error) {
+      console.warn("Could not navigate tab", error);
+    }
   }
-  window.location.href = "chrome://newtab/";
+
+  window.location.replace("about:blank");
 });
 
 document.getElementById("open-popup-hint").addEventListener("click", () => {

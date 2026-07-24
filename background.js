@@ -3,7 +3,7 @@ import {
   ALARM_FOCUS,
   SHORT_BREAK_SECONDS,
 } from "./lib/constants.js";
-import { originsForHost, ruleIdForHost } from "./lib/hostname.js";
+import { originsForHost, allocateRuleIds } from "./lib/hostname.js";
 import { computeStreakUpdate, getSession, getSettings } from "./lib/storage.js";
 
 chrome.runtime.onInstalled.addListener(async () => {
@@ -30,7 +30,8 @@ chrome.storage.onChanged.addListener((changes, area) => {
     changes.sessionActive ||
     changes.sessionType
   ) {
-    syncBlockingRules();
+    // Always go through the serialized helper (fire-and-forget is fine here).
+    void syncBlockingRules();
   }
 });
 
@@ -201,8 +202,24 @@ async function requestHostAccess(host) {
 /**
  * Install DNR redirect rules only while focusing (or alwaysBlock).
  * Clears orphan rules by removing every dynamic rule first.
+ *
+ * Serialized so overlapping callers (storage.onChanged + start/stop) cannot
+ * race on getDynamicRules / updateDynamicRules.
  */
+let syncBlockingRulesChain = Promise.resolve();
+
 async function syncBlockingRules() {
+  const run = () => applyBlockingRules();
+  // Keep the chain alive even if a run fails.
+  const scheduled = syncBlockingRulesChain.then(run, run);
+  syncBlockingRulesChain = scheduled.then(
+    () => undefined,
+    () => undefined,
+  );
+  return scheduled;
+}
+
+async function applyBlockingRules() {
   const settings = await getSettings();
   const session = await getSession();
   const shouldBlock =
@@ -212,9 +229,11 @@ async function syncBlockingRules() {
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   const removeRuleIds = existing.map((rule) => rule.id);
 
+  // requestDomains matches the listed host and its subdomains
+  // (e.g. youtube.com also matches www.youtube.com). See Chrome DNR docs.
   const addRules = shouldBlock
-    ? settings.blockedSites.map((host) => ({
-        id: ruleIdForHost(host),
+    ? allocateRuleIds(settings.blockedSites).map(({ host, id }) => ({
+        id,
         priority: 1,
         action: {
           type: "redirect",
@@ -227,21 +246,13 @@ async function syncBlockingRules() {
       }))
     : [];
 
-  // Avoid duplicate IDs if two hosts somehow collide (extremely rare).
-  const seen = new Set();
-  const uniqueRules = [];
-  for (const rule of addRules) {
-    if (seen.has(rule.id)) continue;
-    seen.add(rule.id);
-    uniqueRules.push(rule);
-  }
-
   try {
     await chrome.declarativeNetRequest.updateDynamicRules({
       removeRuleIds,
-      addRules: uniqueRules,
+      addRules,
     });
   } catch (error) {
     console.warn("Failed to sync blocking rules", error);
+    throw error;
   }
 }

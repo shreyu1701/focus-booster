@@ -34,7 +34,7 @@ async function init() {
   });
 
   document.querySelectorAll(".chip[data-preset]").forEach((chip) => {
-    chip.addEventListener("click", () => {
+    chip.addEventListener("click", async () => {
       selectedPreset = chip.dataset.preset;
       document
         .querySelectorAll(".chip[data-preset]")
@@ -44,14 +44,14 @@ async function init() {
         els.customMinutes.value = String(preset.seconds / 60);
         els.timer.textContent = formatTime(preset.seconds);
       }
-      chrome.storage.local.set({
+      await chrome.storage.local.set({
         selectedPreset,
         customMinutes: Number(els.customMinutes.value),
       });
     });
   });
 
-  els.customMinutes.addEventListener("change", () => {
+  els.customMinutes.addEventListener("change", async () => {
     selectedPreset = "custom";
     document
       .querySelectorAll(".chip[data-preset]")
@@ -59,7 +59,7 @@ async function init() {
     const minutes = clampMinutes(els.customMinutes.value);
     els.customMinutes.value = String(minutes);
     els.timer.textContent = formatTime(minutes * 60);
-    chrome.storage.local.set({
+    await chrome.storage.local.set({
       selectedPreset: "custom",
       customMinutes: minutes,
     });
